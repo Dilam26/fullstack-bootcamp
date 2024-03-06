@@ -1,21 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import reportWebVitals from './reportWebVitals'
+import { Note } from './components/Note'
 
-const Note = ({id, important, content}) => {
-  return(
-    <div>
-      <p>{id}</p>
-      {important ? <strong>Es importante</strong> : <strong>No es importante</strong>}
-      <p>{content}</p>
-    </div>
-  )
-}
 
 const App = () => {
 
-  const notes = [
+  const props = [
     {
       id: 1,
       content: 'HTML is easy',
@@ -33,9 +25,47 @@ const App = () => {
     }
   ]
 
+  const [notes, setNotes] = useState(props)
+  const [newNote, setNewNote] = useState('')
+  const [showAll, setShowAll] = useState(true)
+
+  const handleChange = (event) => {
+    setNewNote(event.target.value)
+  }
+  
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    console.log(newNote)
+    const noteToAddToState = {
+      id: notes.length + 1,
+      content: newNote, 
+      important: Math.random() < 0.5
+    }
+
+    setNotes(notes.concat(noteToAddToState))
+    setNewNote('')
+
+  }
+
+  const handleShowAll = () =>{
+    setShowAll(() => !showAll)
+  }
+
   return (
     <div>
-      {notes.map(note =>  <Note key={note.id} id={note.id} important={note.important} content={note.content}/> )}
+      <h1>Notes</h1>
+      <button onClick={handleShowAll}>{showAll ? 'Show only important' : 'Show all'}</button>
+      {notes
+        .filter(note => {
+          if (showAll === true) return true
+          return note.important === true
+        })
+        .map(note =>  <Note key={note.id} id={note.id} important={note.important} content={note.content}/> )}
+
+      <form onSubmit={handleSubmit}>
+        <input onChange={handleChange} value={newNote} type='text' />
+        <button>Crear nota</button>
+      </form>
     </div>
   )
 }
