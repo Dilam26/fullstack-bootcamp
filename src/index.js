@@ -1,33 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import reportWebVitals from './reportWebVitals'
 import { Note } from './components/Note'
+import { getAllNotes } from './services/notes/getAllNotes'
+import { createNote } from './services/notes/createNote'
 
 
 const App = () => {
 
-  const props = [
-    {
-      id: 1,
-      content: 'HTML is easy',
-      important: true
-    },
-    {
-      id: 2,
-      content: 'Browser can execute only JavaScript',
-      important: false
-    },
-    {
-      id: 3,
-      content: 'GET and POST are the most important methods of HTTP protocol',
-      important: true
-    }
-  ]
-
-  const [notes, setNotes] = useState(props)
+  const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(true)
+
+  useEffect(() => {
+    getAllNotes()
+      .then((notes) => {
+        setNotes(notes)
+      })
+  }, [])
 
   const handleChange = (event) => {
     setNewNote(event.target.value)
@@ -35,32 +25,31 @@ const App = () => {
   
   const handleSubmit = (event) => {
     event.preventDefault()
-    console.log(newNote)
+
     const noteToAddToState = {
-      id: notes.length + 1,
-      content: newNote, 
-      important: Math.random() < 0.5
+      title: newNote, 
+      body: newNote,
+      userId: 1
     }
 
-    setNotes(notes.concat(noteToAddToState))
+    createNote(noteToAddToState)
+      .then(newNote => {
+        setNotes((prevNotes) => [...prevNotes, newNote])
+      })
+    
+
+    // setNotes(notes.concat(noteToAddToState))
     setNewNote('')
 
   }
 
-  const handleShowAll = () =>{
-    setShowAll(() => !showAll)
-  }
+
 
   return (
     <div>
       <h1>Notes</h1>
-      <button onClick={handleShowAll}>{showAll ? 'Show only important' : 'Show all'}</button>
       {notes
-        .filter(note => {
-          if (showAll === true) return true
-          return note.important === true
-        })
-        .map(note =>  <Note key={note.id} id={note.id} important={note.important} content={note.content}/> )}
+        .map(note =>  <Note key={note.id} id={note.id} title={note.title} body={note.body}/> )}
 
       <form onSubmit={handleSubmit}>
         <input onChange={handleChange} value={newNote} type='text' />
